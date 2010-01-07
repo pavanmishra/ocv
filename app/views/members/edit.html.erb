@@ -1,0 +1,100 @@
+<h1>Editing member</h1>
+
+<% form_for(@member) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :birth_place %><br />
+    <%= f.text_field :birth_place %>
+  </p>
+  <p>
+    <%= f.label :countries_visited %><br />
+    <%= f.text_area :countries_visited %>
+  </p>
+  <p>
+    <%= f.label :mothers_name %><br />
+    <%= f.text_field :mothers_name %>
+  </p>
+  <p>
+    <%= f.label :party_name %><br />
+    <%= f.text_field :party_name %>
+  </p>
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :present_address %><br />
+    <%= f.text_field :present_address %>
+  </p>
+  <p>
+    <%= f.label :no_of_daughters %><br />
+    <%= f.text_field :no_of_daughters %>
+  </p>
+  <p>
+    <%= f.label :no_of_sons %><br />
+    <%= f.text_field :no_of_sons %>
+  </p>
+  <p>
+    <%= f.label :profession %><br />
+    <%= f.text_area :profession %>
+  </p>
+  <p>
+    <%= f.label :party_code %><br />
+    <%= f.text_field :party_code %>
+  </p>
+  <p>
+    <%= f.label :books_published %><br />
+    <%= f.text_area :books_published %>
+  </p>
+  <p>
+    <%= f.label :other_information %><br />
+    <%= f.text_area :other_information %>
+  </p>
+  <p>
+    <%= f.label :special_interests %><br />
+    <%= f.text_area :special_interests %>
+  </p>
+  <p>
+    <%= f.label :marital_status %><br />
+    <%= f.text_field :marital_status %>
+  </p>
+  <p>
+    <%= f.label :birth_date %><br />
+    <%= f.date_select :birth_date %>
+  </p>
+  <p>
+    <%= f.label :marriage_date %><br />
+    <%= f.date_select :marriage_date %>
+  </p>
+  <p>
+    <%= f.label :permanent_address %><br />
+    <%= f.text_area :permanent_address %>
+  </p>
+  <p>
+    <%= f.label :education %><br />
+    <%= f.text_area :education %>
+  </p>
+  <p>
+    <%= f.label :fathers_name %><br />
+    <%= f.text_field :fathers_name %>
+  </p>
+  <p>
+    <%= f.label :spouse_name %><br />
+    <%= f.text_field :spouse_name %>
+  </p>
+  <p>
+    <%= f.label :constituency %><br />
+    <%= f.text_field :constituency %>
+  </p>
+  <p>
+    <%= f.label :state %><br />
+    <%= f.text_field :state %>
+  </p>
+  <p>
+    <%= f.submit 'Update' %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @member %> |
+<%= link_to 'Back', members_path %>

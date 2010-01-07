@@ -1,0 +1,64 @@
+<h1>Listing members</h1>
+
+<table>
+  <tr>
+    <th>Email</th>
+    <th>Birth place</th>
+    <th>Countries visited</th>
+    <th>Mothers name</th>
+    <th>Party name</th>
+    <th>Name</th>
+    <th>Present address</th>
+    <th>No of daughters</th>
+    <th>No of sons</th>
+    <th>Profession</th>
+    <th>Party code</th>
+    <th>Books published</th>
+    <th>Other information</th>
+    <th>Special interests</th>
+    <th>Marital status</th>
+    <th>Birth date</th>
+    <th>Marriage date</th>
+    <th>Permanent address</th>
+    <th>Education</th>
+    <th>Fathers name</th>
+    <th>Spouse name</th>
+    <th>Constituency</th>
+    <th>State</th>
+  </tr>
+
+<% @members.each do |member| %>
+  <tr>
+    <td><%=h member.email %></td>
+    <td><%=h member.birth_place %></td>
+    <td><%=h member.countries_visited %></td>
+    <td><%=h member.mothers_name %></td>
+    <td><%=h member.party_name %></td>
+    <td><%=h member.name %></td>
+    <td><%=h member.present_address %></td>
+    <td><%=h member.no_of_daughters %></td>
+    <td><%=h member.no_of_sons %></td>
+    <td><%=h member.profession %></td>
+    <td><%=h member.party_code %></td>
+    <td><%=h member.books_published %></td>
+    <td><%=h member.other_information %></td>
+    <td><%=h member.special_interests %></td>
+    <td><%=h member.marital_status %></td>
+    <td><%=h member.birth_date %></td>
+    <td><%=h member.marriage_date %></td>
+    <td><%=h member.permanent_address %></td>
+    <td><%=h member.education %></td>
+    <td><%=h member.fathers_name %></td>
+    <td><%=h member.spouse_name %></td>
+    <td><%=h member.constituency %></td>
+    <td><%=h member.state %></td>
+    <td><%= link_to 'Show', member %></td>
+    <td><%= link_to 'Edit', edit_member_path(member) %></td>
+    <td><%= link_to 'Destroy', member, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New member', new_member_path %>

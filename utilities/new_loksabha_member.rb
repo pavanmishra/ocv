@@ -1,25 +1,9 @@
 require 'rubygems'
 require 'open-uri'
 require 'nokogiri'
-require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
 
-ENV["RAILS_ENV"] = "development"
+biography_template_url = "http://164.100.47.132/LssNew/Members/Biography.aspx?mpsno=" #{}"http://164.100.47.132/LssNew/Members/former_Biography.aspx?mpsno="
 
-parsing_former_profile = false
-if parsing_former_profile
-  biography_template_url = "http://164.100.47.132/LssNew/Members/former_Biography.aspx?mpsno=" 
-  css_profile_selector = 'Former_biography1'
-else
-  biography_template_url = "http://164.100.47.132/LssNew/Members/Biography.aspx?mpsno="  
-  css_profile_selector = 'Bioprofile1'
-end
-
-summary_header_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_Datagrid1"]//td[@class="darkerb"]'
-summary_data_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_Datagrid1"]//td[@class="griditem2"]'
-bio_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_DataGrid2"]//td[@class="darkerb"]'
-position_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_Datagrid3"]//td[@class="griditem2"]'
-other_header_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_Datagrid4"]//td[@class="darkerb"]'
-other_data_path = '//table[@id="ctl00_ContPlaceHolderMain_'+ css_profile_selector +'_Datagrid4"]//td[@class="griditem2"] | //td[@class="grditem2"]'
 # there are 4573 profiles to be read lets do that in batches of 30
 def clean_summary summary
   new_summary = {}
@@ -35,7 +19,7 @@ def clean_summary summary
     when /constituency/i
       value.slice!(')')
       constituency, state = value.split('(')
-      new_summary['constituency'] = constituency.strip
+      new_summary['constituency'] = constituency
       new_summary['state'] = state.strip
     end
   end
@@ -50,7 +34,7 @@ def clean_bio bio
       new_bio['marital_status'] = value
     when /date of birth/i
       # may need convrsion to date
-      new_bio['birth_date'] = Date.strptime(value, '%d.%m.%Y')
+      new_bio['birth_date'] = value
     when /date of marriage/i
       new_bio['marriage_date'] = value
     when /no\.of daughters/i
@@ -79,6 +63,7 @@ def clean_bio bio
 end
 
 def store_member mps_no, member, no_profile = false, old_profile = false
+=begin
   if no_profile
     Member.create_member_of_no_profile(mps_no)
   elsif old_profile
@@ -86,6 +71,8 @@ def store_member mps_no, member, no_profile = false, old_profile = false
   else
     Member.create_member_having_profile(mps_no, member)
   end
+=end
+  puts member.inspect
 end
 
 def clean_positions positions
@@ -114,22 +101,18 @@ def clean_other other
   end
   return new_other
 end
-alpha_doc = Nokogiri::HTML(open('http://164.100.47.132/LssNew/Members/alphabaticallist.aspx'))
-puts 'Starting the launch of the war'
-alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
-  
-  i = link['href'].split('=').last
+
+(4570..4574).each do |i|
   biography_url = biography_template_url + i.to_s
   doc = Nokogiri::HTML(open(biography_url))
   puts("No profile exists for #{i}") and next unless doc.xpath("//p[@align='center']").empty?
   puts("Profile in old format for #{i}") and next unless doc.xpath("//title").first.content.strip.eql?("Lok Sabha")
   puts 'Processing info for ' + i.to_s
   # hash storing the member info unless ready to be stored in database
-  member_dict={ :name => doc.xpath('//td[@class="gridheader1"]').first.content.strip, :source => biography_url }
+  member_dict={ :name => doc.xpath('//td[@class="gridheader1"]').first.content.strip }
   # extracted the data from first grid, having the parliament information
-
-  member_summary_header = doc.xpath(summary_header_path).collect{|node| node.content.strip}
-  member_summary_data = doc.xpath(summary_data_path).collect{|node| node.content.strip}
+  member_summary_header = doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_Datagrid1"]//td[@class="darkerb"]').collect{|node| node.content.strip}
+  member_summary_data = doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_Datagrid1"]//td[@class="griditem2"]').collect{|node| node.content.strip}
   member_summary = member_summary_header.zip(member_summary_data)
   summary_dict = {}
   member_summary.each do |head, data|
@@ -138,7 +121,7 @@ alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
   summary_dict = clean_summary(summary_dict)
   # extracting the data from second grid, having general bio info
   bio_dict = {}
-  doc.xpath(bio_path).each do |node|
+  doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_DataGrid2"]//td[@class="darkerb"]').each do |node|
     header = node.content.strip
     content = node.parent.children[2].content.strip rescue nil
     bio_dict[header] = content
@@ -147,7 +130,7 @@ alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
   # need to collect the information on positions held by the member
   current_position_header = ''
   positions_dict ={}
-  doc.xpath(position_path).each_with_index do |node, index|
+  doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_Datagrid3"]//td[@class="griditem2"]').each_with_index do |node, index|
     # can have header
     if (index % 2 == 0) and !node.content.strip.eql?('')
       current_position_header = node.content.strip
@@ -159,9 +142,9 @@ alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
   end
   positions_dict = clean_positions(positions_dict)
   # need to collect other information
-  headers = doc.xpath(other_header_path).collect{|node| node.content.strip}.select{|node| !node.eql?('')}  
+  headers = doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_Datagrid4"]//td[@class="darkerb"]').collect{|node| node.content.strip}.select{|node| !node.eql?('')}  
   # the other path for selecting the typo in assigning the class to other information data
-  data = doc.xpath(other_data_path).collect{|node| node.content.strip}.select{|node| !node.eql?('')}  
+  data = doc.xpath('//table[@id="ctl00_ContPlaceHolderMain_Former_biography1_Datagrid4"]//td[@class="griditem2"] | //td[@class="grditem2"]').collect{|node| node.content.strip}.select{|node| !node.eql?('')}  
   other_information = headers.zip(data)
   other_dict = {}
   other_information.each do |head, data|
@@ -171,4 +154,5 @@ alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
   [summary_dict, bio_dict, other_dict].each do |dict| member_dict.merge! dict end
   member_dict['positions'] = positions_dict 
   store_member(i, member_dict)
+  break
 end

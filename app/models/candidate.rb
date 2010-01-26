@@ -25,6 +25,8 @@ class Candidate < ActiveRecord::Base
           last_name, first_name, middle_name = names
         end
       end
+      puts name
+      puts last_name, first_name, middle_name
       candidate.update_attributes(:salutation => salutation, :first_name => first_name, :middle_name => middle_name, :last_name => last_name)
     end
     1

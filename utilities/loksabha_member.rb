@@ -5,7 +5,7 @@ require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
 
 ENV["RAILS_ENV"] = "development"
 
-parsing_former_profile = false
+parsing_former_profile = true
 if parsing_former_profile
   biography_template_url = "http://164.100.47.132/LssNew/Members/former_Biography.aspx?mpsno=" 
   css_profile_selector = 'Former_biography1'
@@ -78,13 +78,14 @@ def clean_bio bio
   return new_bio
 end
 
-def store_member mps_no, member, no_profile = false, old_profile = false
-  if no_profile
-    Member.create_member_of_no_profile(mps_no)
-  elsif old_profile
-    Member.create_member_of_old_profile(mps_no)
-  else
+def store_member mps_no, member, profile = 'new'
+  case profile
+  when 'new'
     Member.create_member_having_profile(mps_no, member)
+  when 'no'
+    Member.create_member_of_no_profile(mps_no)
+  when 'old'
+    Member.create_member_of_old_profile(mps_no, member)
   end
 end
 
@@ -116,13 +117,19 @@ def clean_other other
 end
 alpha_doc = Nokogiri::HTML(open('http://164.100.47.132/LssNew/Members/alphabaticallist.aspx'))
 puts 'Starting the launch of the war'
-alpha_doc.xpath('//td[@class="griditem"]//a').each do |link|
+#alpha_doc.xpath('//td[@class="griditem"]//a')
+(3899..4253).each do |i|
   
-  i = link['href'].split('=').last
+  #i = link['href'].split('=').last
   biography_url = biography_template_url + i.to_s
-  doc = Nokogiri::HTML(open(biography_url))
-  puts("No profile exists for #{i}") and next unless doc.xpath("//p[@align='center']").empty?
-  puts("Profile in old format for #{i}") and next unless doc.xpath("//title").first.content.strip.eql?("Lok Sabha")
+  puts biography_url
+  begin
+    doc = Nokogiri::HTML(open(biography_url))
+  rescue OpenURI::HTTPError
+    puts("(404)No profile exists for #{i}") or store_member(i, doc, 'no') and next
+  end
+  puts("No profile exists for #{i}") or store_member(i, doc, 'no') and next unless doc.xpath("//p[@align='center']").empty?
+  puts("Profile in old format for #{i}") or store_member(i, doc, 'old') and next unless doc.xpath("//title").first.content.strip.eql?("Lok Sabha")
   puts 'Processing info for ' + i.to_s
   # hash storing the member info unless ready to be stored in database
   member_dict={ :name => doc.xpath('//td[@class="gridheader1"]').first.content.strip, :source => biography_url }
